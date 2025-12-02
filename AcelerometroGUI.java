@@ -1,48 +1,65 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class AcelerometroGUI extends JFrame {
 
     private JTextField campoCalcado;
     private JTextField campoDistancia;
     private JTextArea areaResultado;
+
     private JRadioButton opcaoPassosPrimeiro;
     private JRadioButton opcaoTempoPrimeiro;
+
+    // Armazenamento interno
+    private String textoPassos = "";
+    private String textoTempo = "";
+    private boolean calculoValido = false;
 
     public AcelerometroGUI() {
         super("Simulador de Acelerômetro");
 
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
 
-        // Painel de entrada
-        JPanel painelEntrada = new JPanel(new GridLayout(3, 2, 8, 8));
+        // ===============================
+        // Painel principal central
+        // ===============================
+        JPanel painelCentral = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        painelEntrada.add(new JLabel("Número do calçado:"));
-        campoCalcado = new JTextField();
-        painelEntrada.add(campoCalcado);
+        // ===============================
+        // Linha 1 - Campos de entrada
+        // ===============================
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        painelCentral.add(new JLabel("Número do calçado:"), gbc);
 
-        painelEntrada.add(new JLabel("Distância (em metros):"));
-        campoDistancia = new JTextField();
-        painelEntrada.add(campoDistancia);
+        gbc.gridx = 1;
+        campoCalcado = new JTextField(10);
+        painelCentral.add(campoCalcado, gbc);
 
-        add(painelEntrada, BorderLayout.NORTH);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        painelCentral.add(new JLabel("Distância (m):"), gbc);
 
+        gbc.gridx = 1;
+        campoDistancia = new JTextField(10);
+        painelCentral.add(campoDistancia, gbc);
 
-        // Painel de botões
-        JPanel painelBotoes = new JPanel(new FlowLayout());
+        // ===============================
+        // Linha 2 - Botão Calcular
+        // ===============================
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        JButton btnCalcular = new JButton("Calcular Resultado");
+        painelCentral.add(btnCalcular, gbc);
 
-        JButton btnCalcularTempo = new JButton("Calcular Tempo");
-        JButton btnCalcularPassos = new JButton("Calcular Passos");
-
-        painelBotoes.add(btnCalcularTempo);
-        painelBotoes.add(btnCalcularPassos);
-
-        add(painelBotoes, BorderLayout.CENTER);
-
-
-        // Opções de exibição
-        JPanel painelOpcoes = new JPanel(new FlowLayout());
+        // ===============================
+        // Linha 3 - Opções de ordem
+        // ===============================
+        JPanel painelOpcoes = new JPanel();
         opcaoPassosPrimeiro = new JRadioButton("Mostrar Passos Primeiro", true);
         opcaoTempoPrimeiro = new JRadioButton("Mostrar Tempo Primeiro");
 
@@ -53,75 +70,85 @@ public class AcelerometroGUI extends JFrame {
         painelOpcoes.add(opcaoPassosPrimeiro);
         painelOpcoes.add(opcaoTempoPrimeiro);
 
-        add(painelOpcoes, BorderLayout.SOUTH);
+        gbc.gridy = 3;
+        painelCentral.add(painelOpcoes, gbc);
 
+        add(painelCentral, BorderLayout.CENTER);
 
-        // Área de resultado
-        areaResultado = new JTextArea(7, 30);
+        // ===============================
+        // Painel de resultados (direita)
+        // ===============================
+        areaResultado = new JTextArea(14, 28);
         areaResultado.setEditable(false);
+        areaResultado.setFont(new Font("Monospaced", Font.PLAIN, 14));
+
         JScrollPane scroll = new JScrollPane(areaResultado);
         add(scroll, BorderLayout.EAST);
 
+        // ===============================
+        // Eventos
+        // ===============================
+        btnCalcular.addActionListener(e -> calcularTudo());
+        opcaoPassosPrimeiro.addActionListener(e -> atualizarOrdem());
+        opcaoTempoPrimeiro.addActionListener(e -> atualizarOrdem());
 
-        // Evento: calcular passos
-        btnCalcularPassos.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                calcular(true);
-            }
-        });
-
-        // Evento: calcular tempo
-        btnCalcularTempo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                calcular(false);
-            }
-        });
-
-
+        // ===============================
         // Configuração final da janela
-        setSize(650, 250);
+        // ===============================
+        setSize(850, 380);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
 
-
-    // Função central de cálculo
-    private void calcular(boolean calcularPassos) {
+    // =======================================================
+    // Cálculo completo
+    // =======================================================
+    private void calcularTudo() {
         try {
             double calcado = Double.parseDouble(campoCalcado.getText());
             double distancia = Double.parseDouble(campoDistancia.getText());
 
-            // Comprimento do passo
-            double comprimentoPasso = calcado * 0.65; // em cm
+            double comprimentoPasso = (calcado * 0.65) / 100.0;
+            double passos = distancia / comprimentoPasso;
 
-            // Passos necessários
-            double distanciaCm = distancia * 100;
-            double passos = distanciaCm / comprimentoPasso;
-
-            // Tempo necessário (5 km/h = 1.388 m/s)
-            double velocidade = 1.388;
+            double velocidade = 1.388; // 5 km/h
             double tempoSegundos = distancia / velocidade;
 
             int minutos = (int) (tempoSegundos / 60);
             int segundos = (int) (tempoSegundos % 60);
 
-            String textoPassos = String.format("Passos necessários: %.0f\n", passos);
-            String textoTempo = String.format("Tempo estimado: %d min e %d s\n", minutos, segundos);
+            textoPassos = String.format("Passos necessários: %.0f\n", passos);
+            textoTempo = String.format("Tempo estimado: %d min %d s\n", minutos, segundos);
 
-            // Escolha da ordem de exibição
-            if (opcaoPassosPrimeiro.isSelected()) {
-                areaResultado.setText(textoPassos + textoTempo);
-            } else {
-                areaResultado.setText(textoTempo + textoPassos);
-            }
+            calculoValido = true;
+
+            atualizarOrdem();
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Digite valores válidos!", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Digite valores válidos!",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // =======================================================
+    // Atualiza o texto conforme a ordem selecionada
+    // =======================================================
+    private void atualizarOrdem() {
+        if (!calculoValido) return;
+        areaResultado.setText(formatarResultado());
+    }
+
+    // =======================================================
+    // Monta o texto final sem duplicação de código
+    // =======================================================
+    private String formatarResultado() {
+        return opcaoPassosPrimeiro.isSelected()
+                ? textoPassos + textoTempo
+                : textoTempo + textoPassos;
+    }
 
     public static void main(String[] args) {
         new AcelerometroGUI();
