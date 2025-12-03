@@ -1,6 +1,6 @@
 Contribuidores
 Trabalho de ADS
-Trabalho de alamy veryssimo 
+Trabalho de alamy veryssimo Av2
 
 Thiago Gabriel De Souza Lima - 01822273
 Rafael Almeida dos Santos - 01793996
