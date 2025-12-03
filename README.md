@@ -1,6 +1,6 @@
 Contribuidores
 
-Trabalho de alamy
+Trabalho de alamy veryssimo 
 
 Thiago Gabriel De Souza Lima - 01822273
 Rafael Almeida dos Santos - 01793996
